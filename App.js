@@ -1,174 +1,34 @@
 import React, { useState, useEffect } from "react";
 import { BleManager } from "react-native-ble-plx";
-import base64 from 'react-native-base64'
 import {check, request, PERMISSIONS, RESULTS} from "react-native-permissions";
+import BluetoothManager from './managers/BluetoothManager'
 import {
+  Platform,
   SafeAreaView,
   StyleSheet,
   ScrollView,
   View,
   Text,
   StatusBar,
+  Button
 } from "react-native";
 
 const App = () => {
   // State
   const [bluetoothState, setBluetoothState] = useState("Unknown");
-  const [rotationValue, setRotationValue] = useState(0);
 
-  let stateSubscription = null;
-  let scanSubscription = null;
-  let bluetoothManager = null;
-  let isCancelled = false;
-  let connectedDevice = null;
-  let deviceDisconnectedSubscription = null;
+  function onStateChanged(state) {
+    console.log("new state: " + state);
+    setBluetoothState(state);
+  }
 
   useEffect(() => {
-    isCancelled = false;
-
-    console.log("Requesting permission ACCESS_FINE_LOCATION")
-    check(PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION)
-    .then((result) => {
-      if (!isCancelled) {
-        switch (result) {
-          case RESULTS.DENIED:
-            console.log("The permission has not been requested / is denied but requestable");
-            request(PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION, {
-              title: "Allow Bluetooth Access",
-              message: "ERM needs the location permission to use Bluetooth. This is required to communicate with the ERM.",
-              buttonPositive: "Allow",
-              buttonNegative: "Deny"
-            }).then((results) => {
-              if (!isCancelled) {
-                startBluetooth();
-              }
-            });
-            break;
-          case RESULTS.UNAVAILABLE:
-            console.log("This feature is not available (on this device / in this context). Assuming we are GRANTED");
-          case RESULTS.GRANTED:
-            console.log("The permission is granted");
-            startBluetooth();
-            break;
-          case RESULTS.BLOCKED:
-            console.log("The permission is denied and not requestable anymore");
-            setBluetoothState("PermissionBlocked");
-            break;
-        }
-      }
-    });
-
-    function startBluetooth() {
-      console.log("Starting bluetooth");
-
-      bluetoothManager = new BleManager()
-
-      stateSubscription = bluetoothManager.onStateChange((state) => {
-        if (!isCancelled) {
-          console.log("New state: " + state);
-          setBluetoothState(state);
-          if (state === "PoweredOn") {
-              scanAndConnect(bluetoothManager);
-              setBluetoothState("Scanning")
-          }
-        }
-      }, true);
-    }
+    BluetoothManager.getInstance().registerStateCallback(onStateChanged, true);
 
     return () => {
-      isCancelled = true;
-
-      if (stateSubscription != null) {
-        stateSubscription.remove();
-        stateSubscription = null;
-      }
-
-      if (scanSubscription != null) {
-        scanSubscription.remove();
-        scanSubscription = null;
-      }
-
-      if (bluetoothManager != null) {
-        bluetoothManager.stopDeviceScan();
-        bluetoothManager = null;
-      }
-
-      if (connectedDevice != null) {
-        connectedDevice.cancelConnection();
-        connectedDevice = null;
-      }
-
-      if (deviceDisconnectedSubscription != null) {
-        deviceDisconnectedSubscription.remove()
-        deviceDisconnectedSubscription = null;
-      }
+      BluetoothManager.getInstance().deregisterStateCallback(onStateChanged);
     }
   }, []);
-
-  function scanAndConnect(bluetoothManager) {
-    // Only scan for this service
-    uuids = ["723ad25e-1572-4d8e-a543-9e2d0020cdfa"];
-
-    setBluetoothState("Scanning");
-
-    scanSubscription = bluetoothManager.startDeviceScan(uuids, null, (error, device) => {
-        if (error) {
-            // Handle error (scanning will be stopped automatically)
-            console.log("Error scanning: " + error);
-            return;
-        }
-
-        if (isCancelled) {
-          return;
-        }
-
-        setBluetoothState("Connecting");
-
-        console.log("Found device: " + device.name);
-
-        bluetoothManager.stopDeviceScan();
-
-        bluetoothManager.connectToDevice(device.id).then((device) => {
-          console.log("Connected");
-          if (!isCancelled) {
-            deviceDisconnectedSubscription = bluetoothManager.onDeviceDisconnected(device.id, (error, device) => {
-              if (error) {
-                console.log("Device disconnected due to: " + error);
-              }
-
-              console.log("Device " + device.id + " disconnected");
-            });
-            connectedDevice = device;
-
-            setBluetoothState("Connected")
-
-            device.discoverAllServicesAndCharacteristics().then(() => {
-              device.monitorCharacteristicForService("723ad25e-1572-4d8e-a543-9e2d0020cdfa", "943edc10-a043-4379-bd51-5257b75b9c54", (error, characteristic) => {
-                if (error != null) {
-                  console.log("MonitorErrror: " + error);
-                } else {
-                  console.log("CHARACTER VALUE: " + characteristic.value);
-
-                  const byteCharacters = base64.decode(characteristic.value);
-                  const byteNumbers = new Array(byteCharacters.length);
-                  for (let i = 0; i < byteCharacters.length; i++) {
-                      byteNumbers[i] = byteCharacters.charCodeAt(i);
-                  }
-                  const byteArray = new Uint8Array(byteNumbers);
-                  console.log(byteArray[0]);
-                  setRotationValue(byteArray[0])
-                }
-              });
-            }).catch((error) => {
-              console.log("monitor error: " + error);
-            })
-          }
-        }).catch((error) => {
-          console.log("Error connecting: " + error);
-        })
-        
-    });
-  }
 
   return (
     <>
@@ -187,7 +47,10 @@ const App = () => {
               {bluetoothState === "Scanning" && <Text style={styles.sectionStatus}>Scanning for ERM...</Text>}
               {bluetoothState === "Connecting" && <Text style={styles.sectionStatus}>Connecting to ERM...</Text>}
               {bluetoothState === "Connected" && <Text style={styles.sectionStatus}>Connected to ERM!</Text>}
-              {bluetoothState === "Connected" && <Text stlye={styles.sectionRotation}>Current Lean Angle:{rotationValue}°</Text>}
+              {bluetoothState === "Connected" &&
+              <Button
+                onPress={() => BluetoothManager.getInstance().sendSyncNextFrame()}
+                title="Syncronize Frame" />}
             </View>
           </View>
         </ScrollView>
