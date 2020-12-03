@@ -37,7 +37,9 @@ export default class BluetoothManager {
   ERM_SERVICE_UUID = "723ad25e-1572-4d8e-a543-9e2d0020cdfa";
   LEAN_ANGLE_CHARACTERISTIC_UUID = "943edc10-a043-4379-bd51-5257b75b9c54";
   SYNC_NEXT_FRAME_CHARACTERISTIC_UUID = "a94cc3e5-8b2f-4244-9781-8ba98e148760";
+  RECORDING_CHARACTERISTIC_UUID = "d25e46ac-2f7d-4f8b-990f-83952deb63e1";
 
+  // PUBLIC API
   registerStateCallback(callback, callOnReigster) {
     this.stateCallbacks.push(callback);
 
@@ -63,6 +65,38 @@ export default class BluetoothManager {
     }
   }
 
+  readRecordingState(callback) {
+    if (this.connectedDevice != null) {
+      this.connectedDevice.readCharacteristicForService(this.ERM_SERVICE_UUID, this.RECORDING_CHARACTERISTIC_UUID).then((characteristic) => {
+
+        let byteCharacters = base64.decode(characteristic.value);
+        let byteNumbers = new Array(byteCharacters.length);
+        for (let i = 0; i < byteCharacters.length; i++) {
+            byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }
+
+        console.log("Read bytes: " + byteNumbers[0] + " " + byteNumbers[1] + " " + byteNumbers[2]);
+
+        callback(byteNumbers[0] === 1 ? true : false, byteNumbers[1] === 1 ? true : false, byteNumbers[2] === 1 ? true : false);
+        
+      }).catch((error) => {
+        console.log("Failed to read recording state: " + error);
+      })
+    }
+  }
+
+  init() {
+    this.checkPermissions(() => {
+      this.bluetoothManager = new BleManager();
+
+      this.bluetoothStateSubscription = this.bluetoothManager.onStateChange((state) => {
+        console.log("New bluetooth adapter state: " + state);  
+        this.onBluetoothStateChange(state)
+      }, true);
+    });
+  }
+
+  // INTERNAL
   checkPermissions(successCallback) {
     if (Platform.OS == "android") {
       check(PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION).then((result) => {
@@ -108,17 +142,6 @@ export default class BluetoothManager {
     } else {
       successCallback();
     }
-  }
-
-  init() {
-    this.checkPermissions(() => {
-      this.bluetoothManager = new BleManager();
-
-      this.bluetoothStateSubscription = this.bluetoothManager.onStateChange((state) => {
-        console.log("New bluetooth adapter state: " + state);  
-        this.onBluetoothStateChange(state)
-      }, true);
-    });
   }
 
   onBluetoothStateChange(state) {
@@ -187,32 +210,14 @@ export default class BluetoothManager {
           device.discoverAllServicesAndCharacteristics().then(() => {
             // When everything is discovered. We are connected
             this.setCurrentState("Connected");
-
-            this.syncNextFrame();
-            /*
-            device.monitorCharacteristicForService(this.ERM_SERVICE_UUID, this.LEAN_ANGLE_CHARACTERISTIC_UUID, (error, characteristic) => {
-              if (error != null) {
-                console.log("MonitorErrror: " + error);
-              } else {
-                console.log("CHARACTER VALUE: " + characteristic.value);
-
-                const byteCharacters = base64.decode(characteristic.value);
-                const byteNumbers = new Array(byteCharacters.length);
-                for (let i = 0; i < byteCharacters.length; i++) {
-                    byteNumbers[i] = byteCharacters.charCodeAt(i);
-                }
-                const byteArray = new Uint8Array(byteNumbers);
-                console.log(byteArray[0]);
-                //setRotationValue(byteArray[0])
-              }
-            });
-            */
           }).catch((error) => {
             console.log("Discover error: " + error);
+            this.scanAndConnect();
           })
           
         }).catch((error) => {
           console.log("Error connecting: " + error);
+          this.scanAndConnect();
         })
         
     });

@@ -10,7 +10,8 @@ import {
   View,
   Text,
   StatusBar,
-  Button
+  Button,
+  SectionList
 } from "react-native";
 
 const App = () => {
@@ -33,27 +34,31 @@ const App = () => {
   return (
     <>
       <SafeAreaView>
-        <ScrollView ontentInsetAdjustmentBehavior="automatic" style={styles.scrollView}>
-          <View style={styles.body}>
-            <View style={styles.sectionContainer}>
-              <Text style={styles.sectionTitle}>ERM</Text>
-              {bluetoothState === "Unknown" && <Text style={styles.sectionStatus}>Starting Bluetooth...</Text>}
-              {bluetoothState === "Resetting" && <Text style={styles.sectionStatus}>Bluetooth is restarting...</Text>}
-              {bluetoothState === "Unsupported" && <Text style={styles.sectionStatus}>This device does not support Bluetooth Low Energy. This is required for the app to work.</Text>}
-              {bluetoothState === "Unauthorized" && <Text style={styles.sectionStatus}>The app is not allowed to use Bluetooth Low Energy.</Text>}
-              {bluetoothState === "PermissionBlocked" && <Text style={styles.sectionStatus}>The app is not allowed to use Bluetooth Low Energy. Enable it by allowing the app to use your Location.</Text>}
-              {bluetoothState === "PoweredOff" && <Text style={styles.sectionStatus}>Bluetooth is not enabled. Enable to to continue.</Text>}
-              {bluetoothState === "PoweredOn" && <Text style={styles.sectionStatus}>Working...</Text>}
-              {bluetoothState === "Scanning" && <Text style={styles.sectionStatus}>Scanning for ERM...</Text>}
-              {bluetoothState === "Connecting" && <Text style={styles.sectionStatus}>Connecting to ERM...</Text>}
-              {bluetoothState === "Connected" && <Text style={styles.sectionStatus}>Connected to ERM!</Text>}
-              {bluetoothState === "Connected" &&
-              <Button
-                onPress={() => BluetoothManager.getInstance().sendSyncNextFrame()}
-                title="Syncronize Frame" />}
-            </View>
+        <View style={styles.body}>
+          <View style={styles.sectionContainer}>
+            <Text style={styles.sectionTitle}>ERM</Text>
+            {bluetoothState === "Unknown" && <Text style={styles.sectionStatus}>Starting Bluetooth...</Text>}
+            {bluetoothState === "Resetting" && <Text style={styles.sectionStatus}>Bluetooth is restarting...</Text>}
+            {bluetoothState === "Unsupported" && <Text style={styles.sectionStatus}>This device does not support Bluetooth Low Energy. This is required for the app to work.</Text>}
+            {bluetoothState === "Unauthorized" && <Text style={styles.sectionStatus}>The app is not allowed to use Bluetooth Low Energy.</Text>}
+            {bluetoothState === "PermissionBlocked" && <Text style={styles.sectionStatus}>The app is not allowed to use Bluetooth Low Energy. Enable it by allowing the app to use your Location.</Text>}
+            {bluetoothState === "PoweredOff" && <Text style={styles.sectionStatus}>Bluetooth is not enabled. Enable to to continue.</Text>}
+            {bluetoothState === "PoweredOn" && <Text style={styles.sectionStatus}>Working...</Text>}
+            {bluetoothState === "Scanning" && <Text style={styles.sectionStatus}>Scanning for ERM...</Text>}
+            {bluetoothState === "Connecting" && <Text style={styles.sectionStatus}>Connecting to ERM...</Text>}
+            {bluetoothState === "Connected" && <Text style={styles.sectionStatus}>Connected to ERM!</Text>}
+            {bluetoothState === "Connected" &&
+            <Button
+              onPress={() => BluetoothManager.getInstance().sendSyncNextFrame()}
+              title="Syncronize Frame" />}
+            {bluetoothState === "Connected" &&
+            <Button
+              onPress={() => BluetoothManager.getInstance().readRecordingState((recording, file, socket) => {
+                console.log("Got callback: " + recording + " " + file + " " + socket);
+              })}
+              title="Read Recording" />}
           </View>
-        </ScrollView>
+        </View>
       </SafeAreaView>
     </>
   );
