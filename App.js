@@ -14,6 +14,7 @@ import {
   SectionList
 } from "react-native";
 
+
 const App = () => {
   // State
   const [bluetoothState, setBluetoothState] = useState("Unknown");
@@ -23,6 +24,7 @@ const App = () => {
     setBluetoothState(state);
   }
 
+  // Setup BLE manager
   useEffect(() => {
     BluetoothManager.getInstance().registerStateCallback(onStateChanged, true);
 
@@ -31,32 +33,84 @@ const App = () => {
     }
   }, []);
 
+  // Setup timer
+  const [recordState, setRecordState] = useState({recording: false, file: false, socket: false, recordStartTime: 0});
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      BluetoothManager.getInstance().readRecordingState((recording, file, socket, time) => {
+        if (recording !== recordState.recording || file !== recordState.file || socket !== recordState.socket || (time !== 0 && Math.abs(recordState.recordStartTime - (((new Date().getTime() / 1000) - time))) > 5)) {
+          console.log("Got new record state");
+          setRecordState({recording: recording, file: file, socket: socket, recordStartTime: ((new Date().getTime() / 1000) - time)});
+        }
+      });
+    }, 1000);
+    
+    return () => {
+      clearInterval(timer);
+    };
+  }, []);
+
+  // Current record time
+  const [recordTime, setRecordTime] = useState(0);
+
+  useEffect(() => {
+    let timer = null;
+
+    if (recordState.recording) {
+      timer = setInterval(() => {
+        setRecordTime((new Date().getTime() / 1000) - recordState.recordStartTime);
+      }, 1000);
+    }
+    
+    return () => {
+      clearInterval(timer);
+    };
+  });
+
   return (
     <>
       <SafeAreaView>
         <View style={styles.body}>
           <View style={styles.sectionContainer}>
             <Text style={styles.sectionTitle}>ERM</Text>
-            {bluetoothState === "Unknown" && <Text style={styles.sectionStatus}>Starting Bluetooth...</Text>}
-            {bluetoothState === "Resetting" && <Text style={styles.sectionStatus}>Bluetooth is restarting...</Text>}
-            {bluetoothState === "Unsupported" && <Text style={styles.sectionStatus}>This device does not support Bluetooth Low Energy. This is required for the app to work.</Text>}
-            {bluetoothState === "Unauthorized" && <Text style={styles.sectionStatus}>The app is not allowed to use Bluetooth Low Energy.</Text>}
-            {bluetoothState === "PermissionBlocked" && <Text style={styles.sectionStatus}>The app is not allowed to use Bluetooth Low Energy. Enable it by allowing the app to use your Location.</Text>}
-            {bluetoothState === "PoweredOff" && <Text style={styles.sectionStatus}>Bluetooth is not enabled. Enable to to continue.</Text>}
-            {bluetoothState === "PoweredOn" && <Text style={styles.sectionStatus}>Working...</Text>}
-            {bluetoothState === "Scanning" && <Text style={styles.sectionStatus}>Scanning for ERM...</Text>}
-            {bluetoothState === "Connecting" && <Text style={styles.sectionStatus}>Connecting to ERM...</Text>}
-            {bluetoothState === "Connected" && <Text style={styles.sectionStatus}>Connected to ERM!</Text>}
+            {bluetoothState === "Unknown" && <Text style={styles.sectionValue}>Starting Bluetooth...</Text>}
+            {bluetoothState === "Resetting" && <Text style={styles.sectionValue}>Bluetooth is restarting...</Text>}
+            {bluetoothState === "Unsupported" && <Text style={styles.sectionValue}>This device does not support Bluetooth Low Energy. This is required for the app to work.</Text>}
+            {bluetoothState === "Unauthorized" && <Text style={styles.sectionValue}>The app is not allowed to use Bluetooth Low Energy.</Text>}
+            {bluetoothState === "PermissionBlocked" && <Text style={styles.sectionValue}>The app is not allowed to use Bluetooth Low Energy. Enable it by allowing the app to use your Location.</Text>}
+            {bluetoothState === "PoweredOff" && <Text style={styles.sectionValue}>Bluetooth is not enabled. Enable to to continue.</Text>}
+            {bluetoothState === "PoweredOn" && <Text style={styles.sectionValue}>Working...</Text>}
+            {bluetoothState === "Scanning" && <Text style={styles.sectionValue}>Scanning for ERM...</Text>}
+            {bluetoothState === "Connecting" && <Text style={styles.sectionValue}>Connecting to ERM...</Text>}
+            {bluetoothState === "Connected" && <Text style={styles.sectionValue}>Connected to ERM!</Text>}
+            {bluetoothState === "Connected" && !recordState.recording && <Text style={styles.sectionValue}>Not Recording</Text>}
+            {bluetoothState === "Connected" && recordState.recording && <Text style={styles.sectionValue}>Recording {("0" + Math.floor(recordTime % (3600 * 24) / 3600)).slice(-2)}:{("0" + Math.floor(recordTime % 3600 / 60)).slice(-2)}:{("0" + Math.floor(recordTime % 60)).slice(-2)}</Text>}
             {bluetoothState === "Connected" &&
             <Button
-              onPress={() => BluetoothManager.getInstance().sendSyncNextFrame()}
+              style={styles.sectionValue}
+              onPress={() => BluetoothManager.getInstance().writeSyncNextFrame()}
               title="Syncronize Frame" />}
-            {bluetoothState === "Connected" &&
+            {bluetoothState === "Connected" && !recordState.recording &&
             <Button
-              onPress={() => BluetoothManager.getInstance().readRecordingState((recording, file, socket) => {
-                console.log("Got callback: " + recording + " " + file + " " + socket);
+              style={styles.sectionValue}
+              onPress={() => BluetoothManager.getInstance().writeRecordState(true, true, false, () => {
+                console.log("Started recording");
+                BluetoothManager.getInstance().readRecordingState((recording, file, socket, time) => {
+                  setRecordState({recording: recording, file: file, socket: socket, recordStartTime: ((new Date().getTime() / 1000) - time)});
+                });
               })}
-              title="Read Recording" />}
+              title="Start Recording" />}
+            {bluetoothState === "Connected" && recordState.recording &&
+            <Button
+              style={styles.sectionValue}
+              onPress={() => BluetoothManager.getInstance().writeRecordState(false, false, false, () => {
+                console.log("Stopped recording");
+                BluetoothManager.getInstance().readRecordingState((recording, file, socket, time) => {
+                  setRecordState({recording: recording, file: file, socket: socket, recordStartTime: ((new Date().getTime() / 1000) - time)});
+                });
+              })}
+              title="Stop Recording" />}
           </View>
         </View>
       </SafeAreaView>
@@ -71,11 +125,6 @@ const styles = StyleSheet.create({
   },
   body: {
   },
-  sectionRotation: {
-    fontSize: 18,
-    alignItems: "center",
-    textAlign: "center"
-  },
   sectionContainer: {
     marginTop: 32,
     paddingHorizontal: 24,
@@ -86,23 +135,12 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     alignItems: "center"
   },
-  sectionStatus: {
-    marginTop: 8,
+  sectionValue: {
     fontSize: 18,
     fontWeight: "400",
     alignItems: "center",
     textAlign: "center"
-  },
-  highlight: {
-    fontWeight: "700",
-  },
-  footer: {
-    fontSize: 12,
-    fontWeight: "600",
-    padding: 4,
-    paddingRight: 12,
-    textAlign: "right",
-  },
+  }
 });
 
 export default App;

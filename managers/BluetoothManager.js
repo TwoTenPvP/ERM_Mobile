@@ -1,6 +1,7 @@
 import { BleManager } from "react-native-ble-plx";
 import {check, request, PERMISSIONS, RESULTS} from "react-native-permissions";
 import base64 from 'react-native-base64'
+import { readDoubleFromBase64, readBoolFromBase64 } from './BitConverter'
 
 export default class BluetoothManager {
   // Singleton
@@ -55,13 +56,15 @@ export default class BluetoothManager {
     }
   }
 
-  sendSyncNextFrame() {
+  writeSyncNextFrame() {
     if (this.connectedDevice != null) {
-      this.connectedDevice.writeCharacteristicWithResponseForService(this.ERM_SERVICE_UUID, this.SYNC_NEXT_FRAME_CHARACTERISTIC_UUID, base64.encode(String.fromCharCode(1))).then(() => {
+      let data = String.fromCharCode(1);
+
+      this.connectedDevice.writeCharacteristicWithResponseForService(this.ERM_SERVICE_UUID, this.SYNC_NEXT_FRAME_CHARACTERISTIC_UUID, base64.encode(data)).then(() => {
         console.log("Wrote sync");
       }).catch((error) => {
         console.log("Failed sync " + error)
-      }) 
+      });
     }
   }
 
@@ -69,19 +72,27 @@ export default class BluetoothManager {
     if (this.connectedDevice != null) {
       this.connectedDevice.readCharacteristicForService(this.ERM_SERVICE_UUID, this.RECORDING_CHARACTERISTIC_UUID).then((characteristic) => {
 
-        let byteCharacters = base64.decode(characteristic.value);
-        let byteNumbers = new Array(byteCharacters.length);
-        for (let i = 0; i < byteCharacters.length; i++) {
-            byteNumbers[i] = byteCharacters.charCodeAt(i);
-        }
+        let isRecording = readBoolFromBase64(characteristic.value, 0);
+        let useFrameFile = readBoolFromBase64(characteristic.value, 1);
+        let useFrameSocket = readBoolFromBase64(characteristic.value, 2);
+        let recordTime = readDoubleFromBase64(characteristic.value, 3);
 
-        console.log("Read bytes: " + byteNumbers[0] + " " + byteNumbers[1] + " " + byteNumbers[2]);
-
-        callback(byteNumbers[0] === 1 ? true : false, byteNumbers[1] === 1 ? true : false, byteNumbers[2] === 1 ? true : false);
-        
+        callback(isRecording, useFrameFile, useFrameSocket, recordTime);
       }).catch((error) => {
         console.log("Failed to read recording state: " + error);
-      })
+      });
+    }
+  }
+
+  writeRecordState(record, useFrameFile, useFrameSocket, callback) {
+    if (this.connectedDevice != null) {
+      let data = String.fromCharCode(record == true ? 1 : 0) + String.fromCharCode(useFrameFile == true ? 1 : 0) + String.fromCharCode(useFrameSocket == true ? 1 : 0);
+
+      this.connectedDevice.writeCharacteristicWithResponseForService(this.ERM_SERVICE_UUID, this.RECORDING_CHARACTERISTIC_UUID, base64.encode(data)).then(() => {
+        callback();
+      }).catch((error) => {
+        console.log("Failed to write recording state: " + error);
+      });
     }
   }
 
