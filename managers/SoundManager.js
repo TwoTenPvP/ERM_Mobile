@@ -33,12 +33,14 @@ export default class SoundManager {
 
   playSyncSound() {
       if (this.SYNC_SOUND_EFFECT != null) {
-          this.SYNC_SOUND_EFFECT.play((success) => {
-              if (success) {
-                  console.log("Effect played");
-              } else {
-                  console.log("Failed to play");
-              }
+          this.SYNC_SOUND_EFFECT.stop(() => {
+            this.SYNC_SOUND_EFFECT.play((success) => {
+                if (success) {
+                    console.log("Effect played");
+                } else {
+                    console.log("Failed to play");
+                }
+            });
           });
       }
   }
