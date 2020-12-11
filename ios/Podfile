@@ -12,6 +12,8 @@ target 'ERM_Mobile' do
 
   pod 'Permission-BluetoothPeripheral', :path => "#{permissions_path}/BluetoothPeripheral"
 
+  pod 'RNSound', :path => '../node_modules/react-native-sound'
+
   target 'ERM_MobileTests' do
     inherit! :complete
     # Pods for testing

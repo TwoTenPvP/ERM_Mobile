@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { BleManager } from "react-native-ble-plx";
 import {check, request, PERMISSIONS, RESULTS} from "react-native-permissions";
-import BluetoothManager from './managers/BluetoothManager'
+import BluetoothManager from './managers/BluetoothManager';
 import {
   Platform,
   SafeAreaView,
@@ -13,6 +13,7 @@ import {
   Button,
   SectionList
 } from "react-native";
+import SoundManager from "./managers/SoundManager";
 
 
 const App = () => {
@@ -89,7 +90,10 @@ const App = () => {
             {bluetoothState === "Connected" &&
             <Button
               style={styles.sectionValue}
-              onPress={() => BluetoothManager.getInstance().writeSyncNextFrame()}
+              onPress={() => {
+                BluetoothManager.getInstance().writeSyncNextFrame();
+                SoundManager.getInstance().playSyncSound();
+              }}
               title="Syncronize Frame" />}
             {bluetoothState === "Connected" && !recordState.recording &&
             <Button
