@@ -69,6 +69,21 @@ const App = () => {
     };
   });
 
+  // Current gps
+  const [gpsFix, setGpsFix] = useState(false);
+
+  useEffect(() => {
+    let timer = setInterval(() => {
+      BluetoothManager.getInstance().readFix((fix) => {
+        setGpsFix(fix);
+      });
+    }, 1000);
+    
+    return () => {
+      clearInterval(timer);
+    };
+  });
+
   return (
     <>
       <SafeAreaView>
@@ -85,6 +100,8 @@ const App = () => {
             {bluetoothState === "Scanning" && <Text style={styles.sectionValue}>Scanning for ERM...</Text>}
             {bluetoothState === "Connecting" && <Text style={styles.sectionValue}>Connecting to ERM...</Text>}
             {bluetoothState === "Connected" && <Text style={styles.sectionValue}>Connected to ERM!</Text>}
+            {bluetoothState === "Connected" && gpsFix && <Text style={styles.sectionValue}>Has Fix</Text>}
+            {bluetoothState === "Connected" && !gpsFix && <Text style={styles.sectionValue}>No Fix</Text>}
             {bluetoothState === "Connected" && !recordState.recording && <Text style={styles.sectionValue}>Not Recording</Text>}
             {bluetoothState === "Connected" && recordState.recording && <Text style={styles.sectionValue}>Recording {("0" + Math.floor(recordTime % (3600 * 24) / 3600)).slice(-2)}:{("0" + Math.floor(recordTime % 3600 / 60)).slice(-2)}:{("0" + Math.floor(recordTime % 60)).slice(-2)}</Text>}
             {bluetoothState === "Connected" &&

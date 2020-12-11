@@ -39,6 +39,7 @@ export default class BluetoothManager {
   LEAN_ANGLE_CHARACTERISTIC_UUID = "943edc10-a043-4379-bd51-5257b75b9c54";
   SYNC_NEXT_FRAME_CHARACTERISTIC_UUID = "a94cc3e5-8b2f-4244-9781-8ba98e148760";
   RECORDING_CHARACTERISTIC_UUID = "d25e46ac-2f7d-4f8b-990f-83952deb63e1";
+  GPS_CHARACTERISTIC_UUID = "c756cf54-4fd1-48bb-a5c5-7d7fe997319a";
 
   // PUBLIC API
   registerStateCallback(callback, callOnReigster) {
@@ -80,6 +81,16 @@ export default class BluetoothManager {
         callback(isRecording, useFrameFile, useFrameSocket, recordTime);
       }).catch((error) => {
         console.log("Failed to read recording state: " + error);
+      });
+    }
+  }
+
+  readFix(callback) {
+    if (this.connectedDevice != null) {
+      this.connectedDevice.readCharacteristicForService(this.ERM_SERVICE_UUID, this.GPS_CHARACTERISTIC_UUID).then((characteristic) => {
+        callback(readBoolFromBase64(characteristic.value, 0));
+      }).catch((error) => {
+        console.log("Failed to read gps state: " + error);
       });
     }
   }
