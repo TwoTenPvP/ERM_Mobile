@@ -304,6 +304,11 @@ PODS:
     - React-jsi (= 0.63.3)
   - RNPermissions (3.0.0-beta.2):
     - React-Core
+  - RNSound (0.11.0):
+    - React
+    - RNSound/Core (= 0.11.0)
+  - RNSound/Core (0.11.0):
+    - React
   - Yoga (1.14.0)
   - YogaKit (1.18.1):
     - Yoga (~> 1.14)
@@ -358,6 +363,7 @@ DEPENDENCIES:
   - React-RCTVibration (from `../node_modules/react-native/Libraries/Vibration`)
   - ReactCommon/turbomodule/core (from `../node_modules/react-native/ReactCommon`)
   - RNPermissions (from `../node_modules/react-native-permissions`)
+  - RNSound (from `../node_modules/react-native-sound`)
   - Yoga (from `../node_modules/react-native/ReactCommon/yoga`)
 
 SPEC REPOS:
@@ -433,6 +439,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/ReactCommon"
   RNPermissions:
     :path: "../node_modules/react-native-permissions"
+  RNSound:
+    :path: "../node_modules/react-native-sound"
   Yoga:
     :path: "../node_modules/react-native/ReactCommon/yoga"
 
@@ -477,9 +485,10 @@ SPEC CHECKSUMS:
   React-RCTVibration: 8e9fb25724a0805107fc1acc9075e26f814df454
   ReactCommon: 4167844018c9ed375cc01a843e9ee564399e53c3
   RNPermissions: 9e7561bcbab267e3f64a4f6509edc00ae0de1519
+  RNSound: da030221e6ac7e8290c6b43f2b5f2133a8e225b0
   Yoga: 7d13633d129fd179e01b8953d38d47be90db185a
   YogaKit: f782866e155069a2cca2517aafea43200b01fd5a
 
-PODFILE CHECKSUM: 007238c3837a24e82e7241e30bff0314a54b33dc
+PODFILE CHECKSUM: 0ea71d6900750bf00e2149ab0954a7cead6e1ce1
 
 COCOAPODS: 1.10.0

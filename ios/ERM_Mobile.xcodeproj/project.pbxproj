@@ -17,6 +17,7 @@
 		2DCD954D1E0B4F2C00145EB5 /* ERM_MobileTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E356F21AD99517003FC87E /* ERM_MobileTests.m */; };
 		3A462BCF2582606900B81BFC /* File.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A462BCE2582606900B81BFC /* File.swift */; };
 		3A780935258271410035F491 /* ERM.png in Resources */ = {isa = PBXBuildFile; fileRef = 3A780934258271410035F491 /* ERM.png */; };
+		3A7809432583CD580035F491 /* sync.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 3A7809422583CD580035F491 /* sync.mp3 */; };
 		6CACC71CFAACC64B533B0114 /* libPods-ERM_Mobile.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 286F071B98DEE270D2897007 /* libPods-ERM_Mobile.a */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
 		84780F7221E55050B57E617D /* libPods-ERM_Mobile-ERM_MobileTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 9F4DEC3EE6D1C1F09D80E51E /* libPods-ERM_Mobile-ERM_MobileTests.a */; };
@@ -60,6 +61,7 @@
 		3A462BCD2582606900B81BFC /* ERM_Mobile-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "ERM_Mobile-Bridging-Header.h"; sourceTree = "<group>"; };
 		3A462BCE2582606900B81BFC /* File.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = File.swift; sourceTree = "<group>"; };
 		3A780934258271410035F491 /* ERM.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = ERM.png; path = "../../../Library/Mobile Documents/com~apple~CloudDocs/ERM.png"; sourceTree = "<group>"; };
+		3A7809422583CD580035F491 /* sync.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = sync.mp3; path = ../android/app/src/main/res/raw/sync.mp3; sourceTree = "<group>"; };
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = ERM_Mobile/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		8A3CBFD83A5897800B275873 /* Pods-ERM_Mobile-tvOSTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ERM_Mobile-tvOSTests.release.xcconfig"; path = "Target Support Files/Pods-ERM_Mobile-tvOSTests/Pods-ERM_Mobile-tvOSTests.release.xcconfig"; sourceTree = "<group>"; };
 		8BA94DC3850580A60BFEE932 /* Pods-ERM_Mobile-tvOS.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ERM_Mobile-tvOS.release.xcconfig"; path = "Target Support Files/Pods-ERM_Mobile-tvOS/Pods-ERM_Mobile-tvOS.release.xcconfig"; sourceTree = "<group>"; };
@@ -180,6 +182,7 @@
 		83CBB9F61A601CBA00E9B192 = {
 			isa = PBXGroup;
 			children = (
+				3A7809422583CD580035F491 /* sync.mp3 */,
 				3A462BCE2582606900B81BFC /* File.swift */,
 				13B07FAE1A68108700A75B9A /* ERM_Mobile */,
 				832341AE1AAA6A7D00B99B32 /* Libraries */,
@@ -351,6 +354,7 @@
 				3A780935258271410035F491 /* ERM.png in Resources */,
 				81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
+				3A7809432583CD580035F491 /* sync.mp3 in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -672,6 +676,7 @@
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = ERM_Mobile/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				MARKETING_VERSION = 1.0.1;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
@@ -696,6 +701,7 @@
 				DEVELOPMENT_TEAM = P22HWT68JE;
 				INFOPLIST_FILE = ERM_Mobile/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				MARKETING_VERSION = 1.0.1;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",

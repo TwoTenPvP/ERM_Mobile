@@ -5710,6 +5710,11 @@
   "resolved" "https://registry.npmjs.org/react-native-permissions/-/react-native-permissions-3.0.0-beta.2.tgz"
   "version" "3.0.0-beta.2"
 
+"react-native-sound@^0.11.0":
+  "integrity" "sha512-4bGAZfni6E2L695NQjOZwNLBQGXgBGYC4Sy+h99K5h0HqNZjCqR0+aLel+ezASxEJDpaH83gylNObXpiqJgdwg=="
+  "resolved" "https://registry.npmjs.org/react-native-sound/-/react-native-sound-0.11.0.tgz"
+  "version" "0.11.0"
+
 "react-native@0.63.3":
   "integrity" "sha512-71wq13uNo5W8QVQnFlnzZ3AD+XgUBYGhpsxysQFW/hJ8GAt/J5o+Bvhy81FXichp6IBDJDh/JgfHH2gNji8dFA=="
   "resolved" "https://registry.npmjs.org/react-native/-/react-native-0.63.3.tgz"
